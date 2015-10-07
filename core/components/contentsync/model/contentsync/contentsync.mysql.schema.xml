@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model package="contentsync" baseClass="xPDOObject" platform="mysql" defaultEngine="MyISAM" version="1.1">
+	<object class="ContentsyncProfile" table="contentsync_profile" extends="xPDOSimpleObject">
+		<field key="name" dbtype="varchar" precision="64" phptype="string" null="false" index="index" />
+		<field key="description" dbtype="text" phptype="string" null="true" />
+		<field key="type" dbtype="varchar" precision="16" phptype="string" null="true" default="MODX" />
+		<field key="sync_content" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
+		<field key="sync_field" dbtype="varchar" precision="64" phptype="string" null="true" default="id" />
+		<field key="show_import" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
+		<field key="show_export" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
+		<field key="export_resources" dbtype="set" precision="'All','Select'" phptype="string" null="true" default="All" />
+		<field key="export_resources_list" dbtype="text" phptype="string" null="true" />
+		<field key="export_allow_override" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
+		<field key="import_assets" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
+		<field key="site_url" dbtype="varchar" precision="255" phptype="string" null="true" />
+		<field key="media_source" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="assets_sub_dirs" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
+		<field key="assets_sub_dirs_map" dbtype="text" phptype="string" null="true" />
+		<field key="server_offset" dbtype="varchar" precision="4" phptype="string" null="true" />
+		<field key="default_template" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="created_at" dbtype="datetime" phptype="datetime" null="true" />
+		<field key="updated_at" dbtype="datetime" phptype="datetime" null="true" />
+
+		<index alias="Name" name="Name" primary="false" unique="false" type="BTREE" >
+			<column key="name" length="" collation="A" null="false" />
+			<column key="type" length="" collation="A" null="true" />
+		</index>
+		<composite alias="TemplateMaps" class="ContentsyncTemplateMaps" local="id" foreign="profile_id" cardinality="many" owner="local" />
+		<composite alias="History" class="ContentsyncHistory" local="id" foreign="history_id" cardinality="many" owner="local" />
+	</object>
+	<object class="ContentsyncTemplateMaps" table="contentsync_template_maps" extends="xPDOSimpleObject">
+		<field key="profile_id" dbtype="int" precision="11" phptype="integer" null="false" index="index" />
+		<field key="local_template" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="create_template" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="import_template_name" dbtype="varchar" precision="128" phptype="string" null="true" />
+		<field key="media_source" dbtype="int" precision="11" phptype="integer" null="true" default="0" />
+		<field key="default_published" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
+		<field key="default_searchable" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
+		<field key="default_hidemenu" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
+		<field key="default_parent" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="force_default_create" dbtype="tinyint" precision="1" phptype="integer" null="true" default="0" />
+		<field key="force_default_update" dbtype="tinyint" precision="1" phptype="integer" null="true" default="0" />
+		<field key="wordpress_post_type" dbtype="varchar" precision="128" phptype="string" null="true" />
+		<field key="wordpress_build_hierarchy" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
+
+		<index alias="Search" name="Search" primary="false" unique="false" type="BTREE" >
+			<column key="profile_id" length="" collation="A" null="false" />
+			<column key="create_template" length="" collation="A" null="true" />
+			<column key="import_template_name" length="" collation="A" null="true" />
+		</index>
+		<aggregate alias="Profile" class="ContentsyncProfile" local="profile_id" foreign="id" cardinality="one" owner="foreign" />
+	</object>
+	
+	<object class="ContentsyncHistory" table="contentsync_history" extends="xPDOSimpleObject">
+		<field key="profile_id" dbtype="int" precision="11" phptype="integer" null="false" index="index" />
+		<field key="action" dbtype="set" precision="'import','export'" phptype="string" null="true" />
+		<field key="file_type" dbtype="varchar" precision="4" phptype="string" null="true" default="xml" />
+		<field key="count_resources" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="count_templates" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="count_tvs" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="complete" dbtype="tinyint" precision="1" phptype="integer" null="true" default="0" />
+		<field key="started_at" dbtype="datetime" phptype="datetime" null="true" />
+		<field key="finished_at" dbtype="datetime" phptype="datetime" null="true" />
+		<field key="log" dbtype="text" phptype="string" null="true" />
+
+		<index alias="Join" name="Join" primary="false" unique="false" type="BTREE" >
+			<column key="profile_id" length="" collation="A" null="false" />
+		</index>
+		
+		<aggregate alias="Profile" class="ContentsyncProfile" local="profile_id" foreign="id" cardinality="one" owner="foreign" />
+		
+		<composite alias="Resources" class="ContentsyncResources" local="id" foreign="history_id" cardinality="many" owner="local" />
+		<composite alias="Templates" class="ContentsyncTemplates" local="id" foreign="history_id" cardinality="many" owner="local" />
+		<composite alias="Tvs" class="ContentsyncTvs" local="id" foreign="history_id" cardinality="many" owner="local" />
+		
+	</object>
+	<object class="ContentsyncResources" table="contentsync_resources" extends="xPDOSimpleObject">
+		<field key="history_id" dbtype="int" precision="11" phptype="integer" null="false" index="index" />
+		<field key="local_resource_id" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="remote_resource_id" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="wordpress_guid" dbtype="varchar" precision="255" phptype="string" null="true" />
+		<field key="reprocess" dbtype="tinyint" precision="1" phptype="integer" null="true" default="0" />
+		<field key="reprocess_fields" dbtype="text" phptype="string" null="true" />
+		<field key="log" dbtype="text" phptype="string" null="true" />
+		<field key="synced_at" dbtype="datetime" phptype="datetime" null="true" />
+
+		<index alias="Search" name="Search" primary="false" unique="false" type="BTREE" >
+			<column key="history_id" length="" collation="A" null="false" />
+			<column key="remote_resource_id" length="" collation="A" null="true" />
+			<column key="wordpress_guid" length="" collation="A" null="true" />
+		</index>
+		
+		<aggregate alias="History" class="ContentsyncHistory" local="history_id" foreign="id" cardinality="one" owner="foreign" />
+	</object>
+	<object class="ContentsyncTemplates" table="contentsync_templates" extends="xPDOSimpleObject">
+		<field key="history_id" dbtype="int" precision="11" phptype="integer" null="false" index="index" />
+		<field key="local_template_id" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="remote_template_id" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="remote_template_name" dbtype="varchar" precision="50" phptype="string" null="true" />
+		<field key="reprocess" dbtype="tinyint" precision="1" phptype="integer" null="true" default="0" />
+		<field key="log" dbtype="text" phptype="string" null="true" />
+		<field key="synced_at" dbtype="datetime" phptype="datetime" null="true" />
+
+		<index alias="Search" name="Search" primary="false" unique="false" type="BTREE" >
+			<column key="history_id" length="" collation="A" null="false" />
+			<column key="remote_template_id" length="" collation="A" null="true" />
+			<column key="remote_template_name" length="" collation="A" null="true" />
+		</index>
+		<aggregate alias="History" class="ContentsyncHistory" local="history_id" foreign="id" cardinality="one" owner="foreign" />
+	</object>
+	<object class="ContentsyncTvs" table="contentsync_tvs" extends="xPDOSimpleObject">
+		<field key="history_id" dbtype="int" precision="11" phptype="integer" null="true" index="index" />
+		<field key="local_tv_id" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="remote_tv_id" dbtype="int" precision="11" phptype="integer" null="true" />
+		<field key="remote_tv_name" dbtype="varchar" precision="50" phptype="string" null="true" />
+		<field key="reprocess" dbtype="tinyint" precision="1" phptype="integer" null="true" default="0" />
+		<field key="log" dbtype="text" phptype="string" null="true" />
+		<field key="synced_at" dbtype="datetime" phptype="datetime" null="true" />
+
+		<index alias="Search" name="Search" primary="false" unique="false" type="BTREE" >
+			<column key="history_id" length="" collation="A" null="true" />
+			<column key="remote_tv_id" length="" collation="A" null="true" />
+			<column key="remote_tv_name" length="" collation="A" null="true" />
+		</index>
+		<aggregate alias="History" class="ContentsyncHistory" local="history_id" foreign="id" cardinality="one" owner="foreign" />
+	</object>
+</model>
